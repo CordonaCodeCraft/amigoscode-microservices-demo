@@ -1,6 +1,8 @@
 package com.amigoscode.customer.service;
 
 import com.amigoscode.clients.fraud.FraudClient;
+import com.amigoscode.clients.notification.NotificationClient;
+import com.amigoscode.clients.notification.NotificationRequest;
 import com.amigoscode.customer.dto.CustomerRegistrationRequest;
 import com.amigoscode.customer.entity.Customer;
 import com.amigoscode.customer.persistence.CustomerRepository;
@@ -13,6 +15,7 @@ public class CustomerService {
 
   private final CustomerRepository customerRepository;
   private final FraudClient fraudClient;
+  private final NotificationClient notificationClient;
 
   public void registerCustomer(final CustomerRegistrationRequest request) {
 
@@ -29,5 +32,13 @@ public class CustomerService {
     if (fraudCheckResponseResponse.isFraudster()) {
       throw new IllegalStateException("Fraudster!");
     }
+
+    final var notificationRequest =
+        new NotificationRequest(
+            savedCustomer.getId(),
+            savedCustomer.getEmail(),
+            String.format("Hi, %s, welcome to Amigoscode...", savedCustomer.getFirstName()));
+
+    notificationClient.sendNotification(notificationRequest);
   }
 }
