@@ -1,7 +1,7 @@
 package com.amigoscode.customer.service;
 
+import com.amigoscode.amqp.RabbitMQMessageProducer;
 import com.amigoscode.clients.fraud.FraudClient;
-import com.amigoscode.clients.notification.NotificationClient;
 import com.amigoscode.clients.notification.NotificationRequest;
 import com.amigoscode.customer.dto.CustomerRegistrationRequest;
 import com.amigoscode.customer.entity.Customer;
@@ -15,7 +15,7 @@ public class CustomerService {
 
   private final CustomerRepository customerRepository;
   private final FraudClient fraudClient;
-  private final NotificationClient notificationClient;
+  private final RabbitMQMessageProducer messageProducer;
 
   public void registerCustomer(final CustomerRegistrationRequest request) {
 
@@ -39,6 +39,7 @@ public class CustomerService {
             savedCustomer.getEmail(),
             String.format("Hi, %s, welcome to Amigoscode...", savedCustomer.getFirstName()));
 
-    notificationClient.sendNotification(notificationRequest);
+    messageProducer.publish(
+        notificationRequest, "internal.exchange", "internal.notification.routing-key");
   }
 }
