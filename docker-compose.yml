@@ -1,4 +1,5 @@
 services:
+  # POSTGRES
   postgres:
     container_name: postgres
     image: postgres
@@ -13,6 +14,7 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+  # POSTGRES ADMIN
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
@@ -27,24 +29,102 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+  # ZIPKIN
   zipkin:
     image: openzipkin/zipkin
     container_name: zipkin
     ports:
       - "9411:9411"
+    networks:
+      - spring
     depends_on:
       - storage
-#  rabbitmq user: guest, password: guest
+  # RABBITMQ (User: guest, password: guest)
   rabbitmq:
     image: rabbitmq:3.9.11-management-alpine
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - spring
+  # EUREKA
+  eureka-server:
+    image: cordona/eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - spring
+    depends_on:
+      - zipkin
+  # API GATEWAY
+  api-gateway:
+    image: cordona/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - spring
+    depends_on:
+      - zipkin
+      - eureka-server
+  # CUSTOMER
+  customer:
+    image: cordona/customer:latest
+    container_name: customer
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - postgres
+      - zipkin
+      - rabbitmq
+      - eureka-server
+  # FRAUD
+  fraud:
+    image: cordona/fraud:latest
+    container_name: fraud
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - postgres
+      - zipkin
+      - eureka-server
+      - rabbitmq
+    # NOTIFICATION
+  notification:
+    image: cordona/notifications:latest
+    container_name: notification
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - spring
+      - postgres
+    depends_on:
+      - postgres
+      - zipkin
+      - rabbitmq
+      - eureka-server
 networks:
   postgres:
     driver: bridge
-
+  spring:
 volumes:
   postgres:
   pgadmin:
