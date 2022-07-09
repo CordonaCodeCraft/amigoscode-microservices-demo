@@ -49,30 +49,30 @@ services:
     networks:
       - spring
   # EUREKA
-  eureka-server:
-    image: cordona/eureka-server:latest
-    container_name: eureka-server
-    ports:
-      - "8761:8761"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - spring
-    depends_on:
-      - zipkin
-  # API GATEWAY
-  api-gateway:
-    image: cordona/api-gateway:latest
-    container_name: api-gateway
-    ports:
-      - "8083:8083"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    networks:
-      - spring
-    depends_on:
-      - zipkin
-      - eureka-server
+#  eureka-server:
+#    image: cordona/eureka-server:latest
+#    container_name: eureka-server
+#    ports:
+#      - "8761:8761"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#  # API GATEWAY
+#  api-gateway:
+#    image: cordona/api-gateway:latest
+#    container_name: api-gateway
+#    ports:
+#      - "8083:8083"
+#    environment:
+#      - SPRING_PROFILES_ACTIVE=docker
+#    networks:
+#      - spring
+#    depends_on:
+#      - zipkin
+#      - eureka-server
   # CUSTOMER
   customer:
     image: cordona/customer:latest
@@ -88,7 +88,6 @@ services:
       - postgres
       - zipkin
       - rabbitmq
-      - eureka-server
   # FRAUD
   fraud:
     image: cordona/fraud:latest
@@ -103,7 +102,6 @@ services:
     depends_on:
       - postgres
       - zipkin
-      - eureka-server
       - rabbitmq
     # NOTIFICATION
   notification:
@@ -120,7 +118,6 @@ services:
       - postgres
       - zipkin
       - rabbitmq
-      - eureka-server
 networks:
   postgres:
     driver: bridge
